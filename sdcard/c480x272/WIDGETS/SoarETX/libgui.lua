@@ -42,8 +42,11 @@ M.FONT_SIZES = {
 M.flags = 0
 M.colors = {
     primary1 = COLOR_THEME_PRIMARY1,
-    primary2 = COLOR_THEME_PRIMARY2,
-    primary3 = COLOR_THEME_PRIMARY3,
+    primary2 = COLOR_THEME_PRIMARY2,     -- button background / topbar text
+    primary3 = COLOR_THEME_PRIMARY3,     -- button text
+    secondary1 = COLOR_THEME_SECONDARY1, -- topbar background
+    secondary2 = COLOR_THEME_SECONDARY2, -- button border
+    secondary3 = COLOR_THEME_SECONDARY3, -- screen background
     focus = COLOR_THEME_FOCUS,
     edit = COLOR_THEME_EDIT,
     active = COLOR_THEME_ACTIVE,
@@ -195,8 +198,8 @@ function M.newGUI()
         if #_.elements == 1 then
             return
         end
-        color = color or M.colors.active
-        gui.drawRectangle(x - 4, y - 2, w + 8, h + 2, color, 2)
+        color = color or M.colors.focus
+        gui.drawRectangle(x - 2, y - 2, w + 4, h + 4, color, 2)
     end -- drawFocus(...)
 
     -- Move focus to another element
@@ -289,10 +292,8 @@ function M.newGUI()
         local guiFocus = not gui.parent or (focused and gui.parent.editing)
         for idx, element in ipairs(_.elements) do
             -- Clients may provide an update function for elements
-            if element.onUpdate then -- new name the method
+            if element.onUpdate then
                 element.onUpdate(element)
-            elseif element.update then -- For backward compatibility 
-                element.update(element)
             end
             if not element.hidden then
                 element.draw(_.focus == idx and guiFocus)
@@ -480,8 +481,9 @@ function M.newGUI()
                 drawFocus(x, y, w, h)
             end
 
-            gui.drawFilledRectangle(x, y, w, h, M.colors.focus)
-            gui.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(M.colors.primary2, self.flags))
+            gui.drawFilledRectangle(x, y, w, h, M.colors.primary2)
+            gui.drawRectangle(x, y, w, h, M.colors.secondary2)
+            gui.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(M.colors.secondary1, self.flags))
 
             if self.disabled then
                 gui.drawFilledRectangle(x, y, w, h, GREY, 7)
@@ -512,13 +514,13 @@ function M.newGUI()
         }
 
         function self.draw(focused)
-            local fg = M.colors.primary2
-            local bg = M.colors.focus
-            local border = M.colors.active
+            local fg = M.colors.primary3
+            local bg = M.colors.primary2
+            local border = M.colors.secondary2
 
             if self.value then
-                fg = M.colors.primary3
-                bg = M.colors.active
+                fg = M.colors.secondary3
+                bg = M.colors.secondary1
                 border = M.colors.focus
             end
 
@@ -527,6 +529,7 @@ function M.newGUI()
             end
 
             gui.drawFilledRectangle(x, y, w, h, bg)
+            gui.drawRectangle(x, y, w, h, border)
             gui.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, self.flags))
 
             if self.disabled then
